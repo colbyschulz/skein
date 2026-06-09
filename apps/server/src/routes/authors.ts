@@ -2,7 +2,8 @@ import type { FastifyInstance } from "fastify";
 import type { PubMedClient } from "../pubmed/client.js";
 import { buildCandidates } from "../pubmed/candidates.js";
 
-const SEARCH_RETMAX = 80;
+// 25 papers is plenty for disambiguation and keeps the NCBI response small.
+const SEARCH_RETMAX = 25;
 
 export function authorRoutes(app: FastifyInstance, client: PubMedClient): void {
   app.get<{ Querystring: { name?: string } }>(

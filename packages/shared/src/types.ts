@@ -27,6 +27,8 @@ export interface AuthorCandidate {
 export interface GraphNode {
   id: string;
   author: Author;
+  /** Id of the node through which this node was added; null for the seed. */
+  parentId?: string | null;
 }
 
 export interface GraphLink {
@@ -34,6 +36,8 @@ export interface GraphLink {
   target: string;
   /** PMID of the paper that established this co-authorship edge. */
   viaPmid: string;
+  /** Publication title, used as edge label. */
+  viaTitle?: string;
 }
 
 export interface GraphState {

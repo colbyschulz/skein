@@ -12,30 +12,38 @@ interface ClientOptions {
 
 export class PubMedClient {
   private fetchFn: FetchFn;
-  private cache: LRUCache<string, Publication[]>;
+  // Separate caches: esearch results live for 30 min, full publications for 6 h.
+  private esearchCache: LRUCache<string, string[]>;
+  private efetchCache: LRUCache<string, Publication[]>;
 
   constructor(opts: ClientOptions = {}) {
     this.fetchFn = opts.fetchFn ?? ((url) => fetch(url));
-    this.cache = new LRUCache({ max: 500, ttl: opts.ttlMs ?? 1000 * 60 * 60 * 6 });
+    this.esearchCache = new LRUCache({ max: 200, ttl: opts.ttlMs ?? 1000 * 60 * 30 });
+    this.efetchCache = new LRUCache({ max: 500, ttl: opts.ttlMs ?? 1000 * 60 * 60 * 6 });
   }
 
   private async efetch(pmids: string[]): Promise<Publication[]> {
     if (pmids.length === 0) return [];
     const key = `efetch:${pmids.join(",")}`;
-    const cached = this.cache.get(key);
+    const cached = this.efetchCache.get(key);
     if (cached) return cached;
     const res = await this.fetchFn(efetchUrl(pmids));
     if (!res.ok) throw new Error(`efetch failed: ${res.status}`);
     const pubs = parsePublications(await res.text());
-    this.cache.set(key, pubs);
+    this.efetchCache.set(key, pubs);
     return pubs;
   }
 
   async searchAuthorPublications(authorName: string, retmax: number): Promise<Publication[]> {
-    const res = await this.fetchFn(esearchUrl(authorName, retmax));
-    if (!res.ok) throw new Error(`esearch failed: ${res.status}`);
-    const json = (await res.json()) as { esearchresult?: { idlist?: string[] } };
-    const pmids = json.esearchresult?.idlist ?? [];
+    const esearchKey = `esearch:${authorName}:${retmax}`;
+    let pmids = this.esearchCache.get(esearchKey);
+    if (!pmids) {
+      const res = await this.fetchFn(esearchUrl(authorName, retmax));
+      if (!res.ok) throw new Error(`esearch failed: ${res.status}`);
+      const json = (await res.json()) as { esearchresult?: { idlist?: string[] } };
+      pmids = json.esearchresult?.idlist ?? [];
+      this.esearchCache.set(esearchKey, pmids);
+    }
     return this.efetch(pmids);
   }
 
