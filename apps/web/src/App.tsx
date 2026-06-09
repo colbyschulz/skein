@@ -10,8 +10,6 @@ import { useGraphState } from "./graph/useGraphState.js";
 import { useAuthorSearch, useAuthorPublications } from "./api/hooks.js";
 import { filterPublications, capCoAuthors, type YearRange } from "./graph/applyFilters.js";
 import { findPath } from "./graph/findPath.js";
-import { useLocalStorageSync } from "./share/useLocalStorageSync.js";
-import { useUrlGraphSync, copyShareLink } from "./share/useUrlGraphState.js";
 import styles from "./App.module.scss";
 
 export function App() {
@@ -22,8 +20,6 @@ export function App() {
   const [cap, setCap] = useState(20);
 
   const { graph, seed, expand, collapse } = useGraphState();
-  useLocalStorageSync(graph);
-  useUrlGraphSync(graph);
 
   const search = useAuthorSearch(query);
 
@@ -94,12 +90,7 @@ export function App() {
         )}
         {showPicker && <DisambiguationPicker candidates={search.data!} onPick={onPick} />}
         {picked && (
-          <>
-            <Filters range={range} cap={cap} onRangeChange={setRange} onCapChange={setCap} />
-            <button className={styles.share} onClick={() => copyShareLink(graph)}>
-              Copy share link
-            </button>
-          </>
+          <Filters range={range} cap={cap} onRangeChange={setRange} onCapChange={setCap} />
         )}
       </div>
 

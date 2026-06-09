@@ -6,12 +6,14 @@ export interface YearRange {
 }
 
 export function filterPublications(pubs: Publication[], range: YearRange): Publication[] {
-  return pubs.filter((p) => {
-    if (p.year === undefined) return range.from === undefined && range.to === undefined ? true : false;
-    if (range.from !== undefined && p.year < range.from) return false;
-    if (range.to !== undefined && p.year > range.to) return false;
-    return true;
-  });
+  return pubs
+    .filter((p) => {
+      if (p.year === undefined) return range.from === undefined && range.to === undefined;
+      if (range.from !== undefined && p.year < range.from) return false;
+      if (range.to !== undefined && p.year > range.to) return false;
+      return true;
+    })
+    .sort((a, b) => (b.year ?? 0) - (a.year ?? 0)); // newest first
 }
 
 export function capCoAuthors(authors: Author[], max: number): Author[] {

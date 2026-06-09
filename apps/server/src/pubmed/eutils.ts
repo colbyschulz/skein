@@ -12,6 +12,7 @@ export function esearchUrl(authorName: string, retmax: number): string {
   u.searchParams.set("term", `${authorName}[Author]`);
   u.searchParams.set("retmax", String(retmax));
   u.searchParams.set("retmode", "json");
+  u.searchParams.set("sort", "pub+date"); // newest first — better affiliation data
   return withKey(u).toString();
 }
 

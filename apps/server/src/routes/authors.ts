@@ -2,8 +2,10 @@ import type { FastifyInstance } from "fastify";
 import type { PubMedClient } from "../pubmed/client.js";
 import { buildCandidates } from "../pubmed/candidates.js";
 
-// 25 papers is plenty for disambiguation and keeps the NCBI response small.
-const SEARCH_RETMAX = 25;
+// Disambiguation only needs a handful of recent papers to identify distinct affiliations.
+// Publications panel benefits from a larger set for usefulness.
+const DISAMBIG_RETMAX = 10;
+const PUBS_RETMAX = 50;
 
 export function authorRoutes(app: FastifyInstance, client: PubMedClient): void {
   app.get<{ Querystring: { name?: string } }>(
@@ -19,7 +21,7 @@ export function authorRoutes(app: FastifyInstance, client: PubMedClient): void {
     },
     async (req) => {
       const name = req.query.name!;
-      const pubs = await client.searchAuthorPublications(name, SEARCH_RETMAX);
+      const pubs = await client.searchAuthorPublications(name, DISAMBIG_RETMAX);
       return { candidates: buildCandidates(pubs, name) };
     },
   );
@@ -40,7 +42,7 @@ export function authorRoutes(app: FastifyInstance, client: PubMedClient): void {
     },
     async (req) => {
       const { name, affiliation } = req.query;
-      const pubs = await client.searchAuthorPublications(name!, SEARCH_RETMAX);
+      const pubs = await client.searchAuthorPublications(name!, PUBS_RETMAX);
       const filtered = affiliation
         ? pubs.filter((p) =>
             p.authors.some(
