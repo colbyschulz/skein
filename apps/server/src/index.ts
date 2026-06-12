@@ -11,10 +11,11 @@ try {
 
 const port = Number(process.env.PORT ?? 5174);
 
-// process.cwd() is /app in the Docker container, so apps/web/dist is always reachable.
+// Resolve relative to this file, not process.cwd() — the start command may run
+// from the repo root (Dockerfile CMD) or from apps/server (npm start -w).
 const staticDir =
   process.env.NODE_ENV === "production"
-    ? (process.env.STATIC_DIR ?? path.join(process.cwd(), "apps/web/dist"))
+    ? (process.env.STATIC_DIR ?? path.resolve(import.meta.dirname, "../../../apps/web/dist"))
     : undefined;
 
 const app = buildApp({ staticDir });
