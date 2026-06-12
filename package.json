@@ -5,7 +5,7 @@
   "type": "module",
   "workspaces": ["shared", "apps/*"],
   "scripts": {
-    "build": "npm run build -w @spool/web && npm run build -w @spool/server",
+    "build": "npm run build -w @spool/web",
     "dev:server": "npm run dev -w @spool/server",
     "dev:web": "npm run dev -w @spool/web",
     "test": "npm run test --workspaces --if-present"

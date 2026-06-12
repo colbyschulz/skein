@@ -1,15 +1,12 @@
 import path from "path";
-import { fileURLToPath } from "url";
 import { buildApp } from "./app.js";
 
-const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const port = Number(process.env.PORT ?? 5174);
 
-// In production the bundle is at apps/server/dist/index.js, so
-// ../../apps/web/dist resolves to the Vite build output.
+// process.cwd() is /app in the Docker container, so apps/web/dist is always reachable.
 const staticDir =
   process.env.NODE_ENV === "production"
-    ? (process.env.STATIC_DIR ?? path.join(__dirname, "../../apps/web/dist"))
+    ? (process.env.STATIC_DIR ?? path.join(process.cwd(), "apps/web/dist"))
     : undefined;
 
 const app = buildApp({ staticDir });

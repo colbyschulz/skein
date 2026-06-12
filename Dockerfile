@@ -1,17 +1,17 @@
-FROM node:22-alpine AS build
+FROM node:22-alpine
 WORKDIR /app
+
+# Install all workspace deps
 COPY package*.json ./
 COPY shared/package.json shared/
 COPY apps/web/package.json apps/web/
 COPY apps/server/package.json apps/server/
 RUN npm ci
-COPY . .
-RUN npm run build
 
-FROM node:22-alpine
-WORKDIR /app
-COPY --from=build /app/apps/server/dist/index.js apps/server/dist/index.js
-COPY --from=build /app/apps/web/dist apps/web/dist
+# Copy source and build the frontend (server runs straight from source via tsx)
+COPY . .
+RUN npm run build -w @spool/web
+
+ENV NODE_ENV=production PORT=8080
 EXPOSE 8080
-ENV PORT=8080 NODE_ENV=production
-CMD ["node", "apps/server/dist/index.js"]
+CMD ["npx", "tsx", "apps/server/src/index.ts"]
